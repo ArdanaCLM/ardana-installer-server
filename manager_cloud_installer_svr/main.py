@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from config import config
 from flask import Flask
 from flask_cors import CORS
 import logging
 from manager_cloud_installer_svr import ardana
+from manager_cloud_installer_svr import config
 from manager_cloud_installer_svr import oneview
 from manager_cloud_installer_svr import socket_proxy
 from manager_cloud_installer_svr import socketio
