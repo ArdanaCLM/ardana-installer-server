@@ -22,11 +22,10 @@ from manager_cloud_installer_svr import socketio
 from manager_cloud_installer_svr import suse_manager
 from manager_cloud_installer_svr import ui
 
-# attempt to set the log file to /var/log/cloudinstaller/install.log, but if
-# its not writable, still configure default logging level to DEBUG
+# attempt to set the log file to /var/log/cloudinstaller/install.log, but if its not writable, still configure
+# default logging level to DEBUG
 try:
-    logging.basicConfig(level=logging.DEBUG,
-                        filename='/var/log/cloudinstaller/install.log')
+    logging.basicConfig(level=logging.DEBUG, filename='/var/log/cloudinstaller/install.log')
 except IOError as e:
     logging.basicConfig(level=logging.DEBUG)
 
@@ -41,18 +40,17 @@ app.register_blueprint(suse_manager.bp)
 app.register_blueprint(socket_proxy.bp)
 CORS(app)
 
-
 @app.route('/')
 def root():
     return app.send_static_file('index.html')
 
 if __name__ == "__main__":
 
-    flask_config = config.get_flask_config()
+    flask_config = config.get_all('flask', caps=True)
     port = flask_config.pop('PORT', 8081)
     host = flask_config.pop('HOST', '127.0.0.1')
 
-    app.config.from_mapping(config.get_flask_config())
+    app.config.from_mapping(config.get_all('flask', caps=True))
 
     # app.run(debug=True)
     socketio.init_app(app)
