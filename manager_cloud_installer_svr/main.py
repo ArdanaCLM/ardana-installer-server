@@ -32,7 +32,7 @@ except IOError as e:
 LOG = logging.getLogger(__name__)
 app = Flask(__name__,
             static_url_path='',
-            static_folder='web')
+            static_folder=config.get_all('flask').pop('ui_home', 'web'))
 app.register_blueprint(ardana.bp)
 app.register_blueprint(ui.bp)
 app.register_blueprint(oneview.bp)
