@@ -2,10 +2,10 @@
  (c) Copyright 2017 SUSE LLC
 
 ==============================
-Manager Cloud Installer Server
+Ardana Installer Server
 ==============================
 
-REST server for manager cloud installer
+REST server for Ardana cloud installer
 
 ---------------
 Getting Started
