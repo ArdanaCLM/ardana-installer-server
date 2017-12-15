@@ -10,3 +10,4 @@ local.cfg
 *.pyc
 AUTHORS
 ChangeLog
+etc/service.conf.sample

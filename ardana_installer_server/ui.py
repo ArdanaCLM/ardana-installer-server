@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from . import config
 from flask import abort
 from flask import Blueprint
 from flask import jsonify
 from flask import request
 import json
+from oslo_config import cfg
 import re
 import subprocess
 from tinydb import Query
@@ -24,9 +24,10 @@ from tinydb import TinyDB
 
 bp = Blueprint('ui', __name__)
 SUCCESS = {"success": True}
+CONF = cfg.CONF
 
-progress_file = config.get("general", "progress_file")
-db_file = config.get("general", "db_file")
+progress_file = CONF.general.progress_file
+db_file = CONF.general.db_file
 db = TinyDB(db_file)
 server_table = db.table('servers')
 
@@ -234,6 +235,7 @@ def get_ips():
 
     return jsonify(ips)
 
+
 @bp.route("/api/v1/external_urls", methods=['GET'])
 def get_external_urls():
     """Returns list of external URLs the customer can access via the browser
@@ -251,13 +253,12 @@ def get_external_urls():
     HTTP/1.1 200 OK
 
     {
-        "horizon": "https://192.168.245.6:443", 
+        "horizon": "https://192.168.245.6:443",
         "opsconsole": "https://192.168.245.5:9095"
     }
     """
-    config.reload_config()
+    cfg.CONF.reload_config_files()
 
-    urls = config.get_all("urls")
+    urls = {k: v for (k, v) in cfg.CONF.urls.items()}
 
     return jsonify(urls)
-

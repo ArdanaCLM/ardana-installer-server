@@ -14,9 +14,10 @@
 from flask import Flask
 from flask_cors import CORS
 import logging
+from oslo_config import cfg
 
 from ardana_installer_server import ardana
-from ardana_installer_server import config
+from ardana_installer_server import config  # noqa: F401
 from ardana_installer_server import oneview
 from ardana_installer_server import socket_proxy
 from ardana_installer_server import socketio
@@ -29,13 +30,18 @@ from ardana_installer_server import ui
 try:
     logging.basicConfig(level=logging.DEBUG,
                         filename='/var/log/cloudinstaller/install.log')
-except IOError as e:
+except IOError:
     logging.basicConfig(level=logging.DEBUG)
 
 LOG = logging.getLogger(__name__)
+
+CONF = cfg.CONF
+# Load config options from config file or command line
+CONF()
+
 app = Flask(__name__,
             static_url_path='',
-            static_folder=config.get_all('flask').pop('ui_home', 'web'))
+            static_folder=CONF.general.ui_home)
 app.register_blueprint(ardana.bp)
 app.register_blueprint(ui.bp)
 app.register_blueprint(oneview.bp)
@@ -51,12 +57,8 @@ def root():
 
 if __name__ == "__main__":
 
-    flask_config = config.get_all('flask', caps=True)
-    port = flask_config.pop('PORT', 8081)
-    host = flask_config.pop('HOST', '127.0.0.1')
-
-    app.config.from_mapping(config.get_all('flask', caps=True))
-
-    # app.run(debug=True)
     socketio.init_app(app)
-    socketio.run(app, host=host, port=port, use_reloader=True)
+    socketio.run(app,
+                 host=CONF.general.host,
+                 port=CONF.general.port,
+                 use_reloader=True)

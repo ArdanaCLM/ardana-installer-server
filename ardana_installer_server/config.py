@@ -11,60 +11,46 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from ConfigParser import SafeConfigParser
-import logging
-import os
+from oslo_config import cfg
 
-LOG = logging.getLogger(__name__)
+general_opts = [
+    cfg.IPOpt('host',
+              default='0.0.0.0',
+              help='IP address to listen on.'),
+    cfg.PortOpt('port',
+                default=3000,
+                help='Port number to listen on.'),
+    cfg.StrOpt('db_file',
+               default='/tmp/db.json',
+               help='Location of database for discovered servers'),
+    cfg.StrOpt('progress_file',
+               default='/tmp/progress.json',
+               help='Location of file to track progress through UI'),
+    cfg.StrOpt('ui_home',
+               default='web',
+               help='Location of static files to serve'),
+    cfg.URIOpt('ardana_service_url',
+               default='http://localhost:9085',
+               help='URL of ardana service'),
+]
 
-parser = SafeConfigParser()
+url_opts = [
+    cfg.StrOpt('horizon',
+               help='Location of horizon UI'),
+    cfg.StrOpt('opsconsole',
+               help='Location of operations console UI'),
+]
 
-default_config = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                               'defaults.cfg'))
+url_group = cfg.OptGroup(name='urls',
+                         title='URLs to be displayed on the completion page')
 
-config_files = [default_config]
-local_config = os.path.normpath(os.path.join(os.path.dirname(__file__), '..',
-                                             'local.cfg'))
-if os.path.exists(local_config):
-    config_files.append(local_config)
-
-LOG.info("Loading config files %s", config_files)
-# This will fail with an exception if the config file cannot be loaded
-parser.read(config_files)
-
-
-def normalize(val):
-    # Coerce value to an appropriate python type
-    if val.lower() in ("yes", "true"):
-        return True
-
-    if val.lower() in ("no", "false"):
-        return False
-
-    try:
-        return int(val)
-    except ValueError:
-        try:
-            return float(val)
-        except ValueError:
-            pass
-
-    return val
+CONF = cfg.CONF
+CONF.register_opts(general_opts, 'general')
+CONF.register_group(url_group)
+CONF.register_opts(url_opts, url_group)
 
 
-def get(*args, **argv):
-    return normalize(parser.get(*args, **argv))
-
-
-def get_all(section, caps=False):
-    if caps:
-        return {k.upper(): normalize(v) for k, v in parser.items(section)}
-    else:
-        return {k: normalize(v) for k, v in parser.items(section)}
-
-
-def reload_config():
-    """
-    Reloads config files
-    """
-    parser.read(config_files)
+# This function is used by "tox -e genopts" to generate a config file
+# containing all options
+def list_opts():
+    return [('general', general_opts), ('urls', url_opts)]

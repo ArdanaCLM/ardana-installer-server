@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from . import config
 from . import socketio
 import eventlet
 from flask import Blueprint
@@ -19,10 +18,12 @@ from flask import copy_current_request_context
 from flask import request
 from flask_socketio import emit
 import logging
+from oslo_config import cfg
 from socketIO_client import BaseNamespace
 from socketIO_client import SocketIO
 from urlparse import urlparse
 
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 # TODO(gary): Remove these and provide for more general logging control
 logging.getLogger('socketIO-client').setLevel(logging.WARN)
@@ -32,8 +33,8 @@ logging.getLogger('urllib3.connectionpool').setLevel(logging.INFO)
 
 bp = Blueprint('socket_proxy', __name__)
 
-ARDANA_SVC_HOST = urlparse(config.get("ardana", "url")).hostname
-ARDANA_SVC_PORT = urlparse(config.get("ardana", "url")).port or 80
+ARDANA_SVC_HOST = urlparse(CONF.general.ardana_service_url).hostname
+ARDANA_SVC_PORT = urlparse(CONF.general.ardana_service_url).port
 
 LOG_NAMESPACE = '/log'
 EVENT_NAMESPACE = '/event'
