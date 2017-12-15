@@ -13,8 +13,8 @@
 # limitations under the License.
 from flask import Flask
 from flask_cors import CORS
-import logging
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from ardana_installer_server import ardana
 from ardana_installer_server import config  # noqa: F401
@@ -24,20 +24,15 @@ from ardana_installer_server import socketio
 from ardana_installer_server import suse_manager
 from ardana_installer_server import ui
 
-
-# attempt to set the log file to /var/log/cloudinstaller/install.log, but if
-# it's not writable, still configure default logging level to DEBUG
-try:
-    logging.basicConfig(level=logging.DEBUG,
-                        filename='/var/log/cloudinstaller/install.log')
-except IOError:
-    logging.basicConfig(level=logging.DEBUG)
-
 LOG = logging.getLogger(__name__)
-
 CONF = cfg.CONF
+logging.register_options(CONF)
+
 # Load config options from config file or command line
 CONF()
+
+# Setup the logging per the config options
+logging.setup(CONF, 'ardana_installer_service')
 
 app = Flask(__name__,
             static_url_path='',

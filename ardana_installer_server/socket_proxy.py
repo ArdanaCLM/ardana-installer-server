@@ -17,19 +17,14 @@ from flask import Blueprint
 from flask import copy_current_request_context
 from flask import request
 from flask_socketio import emit
-import logging
 from oslo_config import cfg
+from oslo_log import log as logging
 from socketIO_client import BaseNamespace
 from socketIO_client import SocketIO
 from urlparse import urlparse
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
-# TODO(gary): Remove these and provide for more general logging control
-logging.getLogger('socketIO-client').setLevel(logging.WARN)
-logging.getLogger('socketio').setLevel(logging.WARN)
-logging.getLogger('engineio').setLevel(logging.WARN)
-logging.getLogger('urllib3.connectionpool').setLevel(logging.INFO)
 
 bp = Blueprint('socket_proxy', __name__)
 

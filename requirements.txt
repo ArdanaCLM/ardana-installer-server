@@ -7,3 +7,4 @@ requests         # APACHE2
 socketIO-client>=0.7.0 # MIT
 tinydb>=3.5.0    # MIT
 oslo.config>=5.1.0 # Apache-2.0
+oslo.log>=3.30.0 # Apache-2.0
