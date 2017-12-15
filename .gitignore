@@ -8,3 +8,5 @@ build
 log
 local.cfg
 *.pyc
+AUTHORS
+ChangeLog

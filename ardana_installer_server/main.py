@@ -14,18 +14,21 @@
 from flask import Flask
 from flask_cors import CORS
 import logging
-from manager_cloud_installer_svr import ardana
-from manager_cloud_installer_svr import config
-from manager_cloud_installer_svr import oneview
-from manager_cloud_installer_svr import socket_proxy
-from manager_cloud_installer_svr import socketio
-from manager_cloud_installer_svr import suse_manager
-from manager_cloud_installer_svr import ui
 
-# attempt to set the log file to /var/log/cloudinstaller/install.log, but if its not writable, still configure
-# default logging level to DEBUG
+from ardana_installer_server import ardana
+from ardana_installer_server import config
+from ardana_installer_server import oneview
+from ardana_installer_server import socket_proxy
+from ardana_installer_server import socketio
+from ardana_installer_server import suse_manager
+from ardana_installer_server import ui
+
+
+# attempt to set the log file to /var/log/cloudinstaller/install.log, but if
+# it's not writable, still configure default logging level to DEBUG
 try:
-    logging.basicConfig(level=logging.DEBUG, filename='/var/log/cloudinstaller/install.log')
+    logging.basicConfig(level=logging.DEBUG,
+                        filename='/var/log/cloudinstaller/install.log')
 except IOError as e:
     logging.basicConfig(level=logging.DEBUG)
 
@@ -40,9 +43,11 @@ app.register_blueprint(suse_manager.bp)
 app.register_blueprint(socket_proxy.bp)
 CORS(app)
 
+
 @app.route('/')
 def root():
     return app.send_static_file('index.html')
+
 
 if __name__ == "__main__":
 
