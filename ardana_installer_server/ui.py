@@ -102,24 +102,22 @@ def insert_servers():
 
 @bp.route("/api/v1/server", methods=['GET'])
 def get_servers():
-    """Returns a list of server(s) given an 'id' and/or 'source'
+    """Returns a list of server(s) given a list of 'source'
 
     'source' is a comma-delimited list joined by an OR statement
-    'id' and 'source' are joined by an AND statement
 
     **Example Request**:
 
     .. sourcecode:: http
 
-    GET /api/v1/server?id=myid&source=src1,src2 HTTP/1.1
+    GET /api/v1/server?source=src1,src2 HTTP/1.1
     """
     q = Query()
     try:
-        sid = request.args.get('id', None)
         src = request.args.get('source', None)
-        if not sid and not src:
+        if not src:
             return jsonify(server_table.all())
-        query_str = create_query_str(sid, src)
+        query_str = create_query_str(src)
         exec("results = server_table.search(%s)" % query_str)
         return jsonify(results)
     except Exception:
@@ -170,28 +168,26 @@ def delete_server():
 
     .. sourcecode:: http
 
-    DELETE /api/v1/server?id=myid&source=src1,src2 HTTP/1.1
+    DELETE /api/v1/server?source=src1,src2 HTTP/1.1
     """
     q = Query()
     try:
-        sid = request.args.get('id', None)
         src = request.args.get('source', None)
-        if not sid and not src:
-            return jsonify(error="id and/or source must be specified"), 400
-        query_str = create_query_str(sid, src)
+        if not src:
+            return jsonify(error="source must be specified"), 400
+        query_str = create_query_str(src)
         exec("server_table.remove(%s)" % query_str)
         return jsonify(SUCCESS)
     except Exception:
         abort(400)
 
 
-def create_query_str(sid, src):
+def create_query_str(src):
     queries = []
-    if sid:
-        queries.append("(q.id == \"%s\")" % sid)
-
     if src:
         clauses = []
+        if not set(src.split(',')).issubset(['sm', 'ov', 'manual']):
+            return jsonify(error="specified sources are invalid"), 400
         for source in src.split(','):
             clauses.append('(q.source == "%s")' % source)
         queries.append("(%s)" % '|'.join(clauses))
