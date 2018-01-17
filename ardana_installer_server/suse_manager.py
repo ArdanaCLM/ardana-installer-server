@@ -47,7 +47,7 @@ def connection_test():
 
     creds = request.get_json() or {}
     port = "443"
-    if creds['port'] != 0:
+    if creds['port'] and creds['port'] != 0:
         port = creds['port']
     # check the host and port first before login
     try:
