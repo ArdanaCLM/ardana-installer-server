@@ -46,7 +46,7 @@ def connection_test():
         context = ssl._create_unverified_context()
 
     creds = request.get_json() or {}
-    port = "8443"
+    port = "443"
     if creds['port'] != 0:
         port = creds['port']
     # check the host and port first before login
