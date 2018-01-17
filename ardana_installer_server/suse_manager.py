@@ -28,9 +28,9 @@ Calls to SUSE Manager
 """
 
 
-def get_client(url, secured):
+def get_client(url, verify_ssl):
     context = ssl._create_default_https_context()
-    if secured == 'false':
+    if verify_ssl == 'false':
         context = ssl._create_unverified_context()
 
     client = xmlrpclib.Server(url, verbose=0, context=context)
@@ -41,8 +41,8 @@ def get_client(url, secured):
 def connection_test():
     context = ssl._create_default_https_context()
 
-    secured = request.headers.get('Secured')
-    if secured == 'false':
+    verify_ssl = request.headers.get('Secured')
+    if verify_ssl == 'false':
         context = ssl._create_unverified_context()
 
     creds = request.get_json() or {}
@@ -77,9 +77,9 @@ def sm_server_list():
     try:
         key = request.headers.get('Auth-Token')
         url = request.headers.get('Suse-Manager-Url')
-        secured = request.headers.get('Secured')
+        verify_ssl = request.headers.get('Secured')
 
-        client = get_client(url, secured)
+        client = get_client(url, verify_ssl)
         server_list = client.system.listActiveSystems(key)
 
         for server in server_list:
@@ -96,9 +96,9 @@ def sm_server_details(id):
     try:
         key = request.headers.get('Auth-Token')
         url = request.headers.get('Suse-Manager-Url')
-        secured = request.headers.get('Secured')
+        verify_ssl = request.headers.get('Secured')
 
-        client = get_client(url, secured)
+        client = get_client(url, verify_ssl)
         detail_list = client.system.listActiveSystemsDetails(key, int(id))
 
         detail = detail_list[0]
