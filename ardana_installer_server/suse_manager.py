@@ -82,10 +82,6 @@ def sm_server_list():
         client = get_client(url, verify_ssl)
         server_list = client.system.listActiveSystems(key)
 
-        for server in server_list:
-            # last_checkin is an object, which is not json-serializable
-            server['last_checkin'] = str(server['last_checkin'])
-
         return jsonify(server_list)
     except Exception as e:
         return jsonify(error=str(e)), 400
@@ -102,8 +98,6 @@ def sm_server_details(id):
         detail_list = client.system.listActiveSystemsDetails(key, int(id))
 
         detail = detail_list[0]
-        # last_checkin is an object, which is not json-serializable
-        detail['last_checkin'] = str(detail['last_checkin'])
 
         return jsonify(detail)
     except Exception as e:

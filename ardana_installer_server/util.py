@@ -12,11 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from flask import abort
+from flask.json import JSONEncoder
+import datetime
 import requests
 import socket
+import xmlrpclib
 
 TIMEOUT = 2
 
+class CustomJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        try:
+            if isinstance(obj, xmlrpclib.DateTime):
+                return datetime.datetime.strptime(
+                    obj.value, "%Y%m%dT%H:%M:%S").isoformat()
+            iterable = iter(obj)
+        except TypeError:
+            pass
+        else:
+            return list(iterable)
+        return JSONEncoder.default(self, obj)
 
 # Forward the url to the given destination
 def forward(url, request):
