@@ -28,8 +28,11 @@ Calls to SUSE Manager
 """
 
 
-def get_client(url):
-    context = None
+def get_client(url, verify_ssl):
+    context = ssl._create_default_https_context()
+    if verify_ssl == 'false':
+        context = ssl._create_unverified_context()
+
     client = xmlrpclib.Server(url, verbose=0, context=context)
     return client
 
@@ -38,13 +41,13 @@ def get_client(url):
 def connection_test():
     context = ssl._create_default_https_context()
 
-    secured = request.headers.get('Secured')
-    if secured == 'false':
+    verify_ssl = request.headers.get('Secured')
+    if verify_ssl == 'false':
         context = ssl._create_unverified_context()
 
     creds = request.get_json() or {}
-    port = "8443"
-    if creds['port'] != 0:
+    port = "443"
+    if creds['port'] and creds['port'] != 0:
         port = creds['port']
     # check the host and port first before login
     try:
@@ -74,8 +77,9 @@ def sm_server_list():
     try:
         key = request.headers.get('Auth-Token')
         url = request.headers.get('Suse-Manager-Url')
+        verify_ssl = request.headers.get('Secured')
 
-        client = get_client(url)
+        client = get_client(url, verify_ssl)
         server_list = client.system.listActiveSystems(key)
 
         for server in server_list:
@@ -83,8 +87,8 @@ def sm_server_list():
             server['last_checkin'] = str(server['last_checkin'])
 
         return jsonify(server_list)
-    except Exception:
-        abort(400)
+    except Exception as e:
+        return jsonify(error=str(e)), 400
 
 
 @bp.route("/api/v1/sm/servers/<id>")
@@ -92,8 +96,9 @@ def sm_server_details(id):
     try:
         key = request.headers.get('Auth-Token')
         url = request.headers.get('Suse-Manager-Url')
+        verify_ssl = request.headers.get('Secured')
 
-        client = get_client(url)
+        client = get_client(url, verify_ssl)
         detail_list = client.system.listActiveSystemsDetails(key, int(id))
 
         detail = detail_list[0]
@@ -101,5 +106,5 @@ def sm_server_details(id):
         detail['last_checkin'] = str(detail['last_checkin'])
 
         return jsonify(detail)
-    except Exception:
-        abort(400)
+    except Exception as e:
+        return jsonify(error=str(e)), 400
