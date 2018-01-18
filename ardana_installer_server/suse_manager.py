@@ -97,7 +97,9 @@ def sm_server_details(id):
         client = get_client(url, verify_ssl)
         detail_list = client.system.listActiveSystemsDetails(key, int(id))
 
-        detail = detail_list[0]
+        detail = detail_list[0].copy()
+        detail.update(client.system.getDetails(key, int(id)))
+
 
         return jsonify(detail)
     except Exception as e:
