@@ -97,9 +97,9 @@ def sm_server_details(id):
         client = get_client(url, verify_ssl)
         detail_list = client.system.listActiveSystemsDetails(key, int(id))
 
-        detail = detail_list[0].copy()
+        detail = detail_list[0]
         detail.update(client.system.getDetails(key, int(id)))
-
+        detail.update({"running_kernel": client.system.getRunningKernel(key, int(id))})
 
         return jsonify(detail)
     except Exception as e:
