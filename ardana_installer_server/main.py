@@ -23,6 +23,7 @@ from ardana_installer_server import socket_proxy
 from ardana_installer_server import socketio
 from ardana_installer_server import suse_manager
 from ardana_installer_server import ui
+from ardana_installer_server.util import CustomJSONEncoder
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -42,6 +43,7 @@ app.register_blueprint(ui.bp)
 app.register_blueprint(oneview.bp)
 app.register_blueprint(suse_manager.bp)
 app.register_blueprint(socket_proxy.bp)
+app.json_encoder = CustomJSONEncoder
 CORS(app)
 
 
