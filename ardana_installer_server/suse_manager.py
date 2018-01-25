@@ -98,6 +98,8 @@ def sm_server_details(id):
         detail_list = client.system.listActiveSystemsDetails(key, int(id))
 
         detail = detail_list[0]
+        detail.update(client.system.getDetails(key, int(id)))
+        detail.update({"running_kernel": client.system.getRunningKernel(key, int(id))})
 
         return jsonify(detail)
     except Exception as e:
