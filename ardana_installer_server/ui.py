@@ -88,6 +88,9 @@ def insert_servers():
                                      "id or source"), 400
             sid = entry['id']
             src = entry['source']
+            if not set(src.split(',')).issubset(['sm', 'ov', 'manual']):
+                return jsonify(error="source=%s for id=%s is "
+                                     "invalid" % (src, sid)), 400
             server_entries = server_table.search(
                 (server.id == sid) & (server.source == src))
             if server_entries:
@@ -145,6 +148,9 @@ def update_server():
                                  "id or source"), 400
         sid = entry['id']
         src = entry['source']
+        if not set(src.split(',')).issubset(['sm', 'ov', 'manual']):
+            return jsonify(error="source=%s for id=%s is "
+                                 "invalid" % (src, sid)), 400
         server_entries = server_table.search(
             (server.id == sid) & (server.source == src))
         if not server_entries:
