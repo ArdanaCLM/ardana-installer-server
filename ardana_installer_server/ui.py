@@ -26,10 +26,6 @@ bp = Blueprint('ui', __name__)
 SUCCESS = {"success": True}
 CONF = cfg.CONF
 
-progress_file = CONF.general.progress_file
-db_file = CONF.general.db_file
-db = TinyDB(db_file)
-server_table = db.table('servers')
 
 """
 Calls handled locally to support the UI
@@ -41,7 +37,7 @@ def get_progress():
 
     contents = ''
     try:
-        with open(progress_file) as f:
+        with open(CONF.general.progress_file) as f:
             contents = json.load(f)
 
     except IOError:
@@ -56,7 +52,7 @@ def save_progress():
     data = request.get_json()
 
     try:
-        with open(progress_file, "w") as f:
+        with open(CONF.general.progress_file, "w") as f:
             json.dump(data, f)
         return jsonify(SUCCESS)
     except Exception:
@@ -77,6 +73,8 @@ def insert_servers():
     POST /api/v1/server HTTP/1.1
          where the body contains a list of server dictionaries
     """
+    db = TinyDB(CONF.general.db_file)
+    server_table = db.table('servers')
     server = Query()
     try:
         data = request.get_json()
@@ -115,6 +113,8 @@ def get_servers():
 
     GET /api/v1/server?source=src1,src2 HTTP/1.1
     """
+    db = TinyDB(CONF.general.db_file)
+    server_table = db.table('servers')
     q = Query()
     try:
         src = request.args.get('source', None)
@@ -140,6 +140,8 @@ def update_server():
     PUT /api/v1/server HTTP/1.1
          where the body contains a dictionary containing a server's details
     """
+    db = TinyDB(CONF.general.db_file)
+    server_table = db.table('servers')
     server = Query()
     try:
         entry = request.get_json()
@@ -176,6 +178,8 @@ def delete_server():
 
     DELETE /api/v1/server?source=src1,src2 HTTP/1.1
     """
+    db = TinyDB(CONF.general.db_file)
+    server_table = db.table('servers')
     q = Query()
     try:
         src = request.args.get('source', None)
