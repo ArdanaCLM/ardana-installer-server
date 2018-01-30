@@ -1,5 +1,5 @@
 ..
- (c) Copyright 2018 SUSE LLC
+ (c) Copyright 2017-2018 SUSE LLC
 
 ==============================
 Ardana Installer Server
