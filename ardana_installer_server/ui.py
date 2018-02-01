@@ -176,24 +176,27 @@ def delete_server():
 
     .. sourcecode:: http
 
-    DELETE /api/v1/server?source=src1,src2 HTTP/1.1
+    DELETE /api/v1/server?source=src1,src2&id=1234 HTTP/1.1
     """
     db = TinyDB(CONF.general.db_file)
     server_table = db.table('servers')
     q = Query()
     try:
         src = request.args.get('source', None)
+        id = request.args.get('id', None)
         if not src:
             return jsonify(error="source must be specified"), 400
-        query_str = create_query_str(src)
+        query_str = create_query_str(src, id)
         exec("server_table.remove(%s)" % query_str)
         return jsonify(SUCCESS)
     except Exception:
         abort(400)
 
-
-def create_query_str(src):
+def create_query_str(src,id=None):
     queries = []
+
+    if id:
+        queries.append("(q.id == \"%s\")" % id)
     if src:
         clauses = []
         if not set(src.split(',')).issubset(['sm', 'ov', 'manual']):
