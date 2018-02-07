@@ -145,21 +145,23 @@ def update_server():
     server = Query()
     try:
         entry = request.get_json()
-        if not set(['id', 'source']).issubset(entry):
+        if not set(['id', 'origId', 'source']).issubset(entry):
             return jsonify(error="There is one or more entries missing "
-                                 "id or source"), 400
-        sid = entry['id']
+                                 "id, origId or source"), 400
+        sid = entry['origId']
         src = entry['source']
         if not set(src.split(',')).issubset(['sm', 'ov', 'manual']):
-            return jsonify(error="source=%s for id=%s is "
+            return jsonify(error="source=%s for sid=%s is "
                                  "invalid" % (src, sid)), 400
         server_entries = server_table.search(
             (server.id == sid) & (server.source == src))
         if not server_entries:
-            return jsonify(error="id:%s; source:%s not found "
+            return jsonify(error="sid:%s; source:%s not found "
                                  "to be updated" % (sid, src)), 404
         server_table.remove(
             (server.id == sid) & (server.source == src))
+        # remove the extra field for search
+        del entry['origId']
         server_table.insert(entry)
         return jsonify(SUCCESS)
     except Exception:
