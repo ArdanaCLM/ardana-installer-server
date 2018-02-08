@@ -11,6 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# When running the main program, reference to the ardana_service package
+# will throw errors unless the current directory is added to the python path
+#if __name__ == "__main__":
+#    import sys
+#    sys.path.append('.')
+
 from flask import Flask
 from flask_cors import CORS
 from oslo_config import cfg
@@ -52,10 +59,14 @@ def root():
     return app.send_static_file('index.html')
 
 
-if __name__ == "__main__":
+def main():
 
     socketio.init_app(app)
     socketio.run(app,
                  host=CONF.general.host,
                  port=CONF.general.port,
                  use_reloader=True)
+
+if __name__ == "__main__":
+    main()
+
