@@ -12,12 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# When running the main program, reference to the ardana_service package
-# will throw errors unless the current directory is added to the python path
-#if __name__ == "__main__":
-#    import sys
-#    sys.path.append('.')
-
 from flask import Flask
 from flask_cors import CORS
 from oslo_config import cfg
