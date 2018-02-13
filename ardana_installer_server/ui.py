@@ -64,7 +64,7 @@ def save_progress():
 def insert_servers():
     """Inserts a list of servers to the server table.
 
-    'id' and 'source' fields must be unique
+    'uid' and 'source' fields must be unique
 
     **Example Request**:
 
@@ -79,21 +79,21 @@ def insert_servers():
     try:
         data = request.get_json()
 
-        # Check for dupes and missing id & server keys
+        # Check for dupes and missing uid & server keys
         for entry in data:
-            if not set(['id', 'source']).issubset(entry):
+            if not set(['id', 'uid', 'source']).issubset(entry):
                 return jsonify(error="There is one or more entries missing "
-                                     "id or source"), 400
-            sid = entry['id']
+                                     "id , uid or source"), 400
+            sid = entry['uid']
             src = entry['source']
             if not set(src.split(',')).issubset(['sm', 'ov', 'manual']):
-                return jsonify(error="source=%s for id=%s is "
+                return jsonify(error="source=%s for uid=%s is "
                                      "invalid" % (src, sid)), 400
             server_entries = server_table.search(
-                (server.id == sid) & (server.source == src))
+                (server.uid == sid) & (server.source == src))
             if server_entries:
                 return jsonify(error="There is an entry already matching "
-                                     "id=%s and server=%s" % (sid, src)), 400
+                                     "uid=%s and server=%s" % (sid, src)), 400
 
         server_table.insert_multiple(server for server in data)
         return jsonify(SUCCESS)
@@ -145,21 +145,21 @@ def update_server():
     server = Query()
     try:
         entry = request.get_json()
-        if not set(['id', 'source']).issubset(entry):
+        if not set(['uid', 'source']).issubset(entry):
             return jsonify(error="There is one or more entries missing "
-                                 "id or source"), 400
-        sid = entry['id']
+                                 "uid or source"), 400
+        sid = entry['uid']
         src = entry['source']
         if not set(src.split(',')).issubset(['sm', 'ov', 'manual']):
-            return jsonify(error="source=%s for id=%s is "
+            return jsonify(error="source=%s for uid=%s is "
                                  "invalid" % (src, sid)), 400
         server_entries = server_table.search(
-            (server.id == sid) & (server.source == src))
+            (server.uid == sid) & (server.source == src))
         if not server_entries:
-            return jsonify(error="id:%s; source:%s not found "
+            return jsonify(error="uid:%s; source:%s not found "
                                  "to be updated" % (sid, src)), 404
         server_table.remove(
-            (server.id == sid) & (server.source == src))
+            (server.uid == sid) & (server.source == src))
         server_table.insert(entry)
         return jsonify(SUCCESS)
     except Exception:
@@ -176,27 +176,27 @@ def delete_server():
 
     .. sourcecode:: http
 
-    DELETE /api/v1/server?source=src1,src2&id=1234 HTTP/1.1
+    DELETE /api/v1/server?source=src1,src2&uid=1234 HTTP/1.1
     """
     db = TinyDB(CONF.general.db_file)
     server_table = db.table('servers')
     q = Query()
     try:
         src = request.args.get('source', None)
-        id = request.args.get('id', None)
+        uid = request.args.get('uid', None)
         if not src:
             return jsonify(error="source must be specified"), 400
-        query_str = create_query_str(src, id)
+        query_str = create_query_str(src, uid)
         exec("server_table.remove(%s)" % query_str)
         return jsonify(SUCCESS)
     except Exception:
         abort(400)
 
-def create_query_str(src,id=None):
+def create_query_str(src,uid=None):
     queries = []
 
-    if id:
-        queries.append("(q.id == \"%s\")" % id)
+    if uid:
+        queries.append("(q.uid == \"%s\")" % uid)
     if src:
         clauses = []
         if not set(src.split(',')).issubset(['sm', 'ov', 'manual']):
