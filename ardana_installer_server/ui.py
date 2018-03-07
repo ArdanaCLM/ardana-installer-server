@@ -21,6 +21,8 @@ import re
 import subprocess
 from tinydb import Query
 from tinydb import TinyDB
+import pwd
+import os
 
 bp = Blueprint('ui', __name__)
 SUCCESS = {"success": True}
@@ -271,3 +273,25 @@ def get_external_urls():
     urls = {k: v for (k, v) in cfg.CONF.urls.items()}
 
     return jsonify(urls)
+
+
+@bp.route("/api/v1/user", methods=['GET'])
+def get_user():
+    """Returns the username the service is running under
+
+    **Example Request**:
+
+    .. sourcecode:: http
+
+    GET /api/v1/user/1.1
+
+    **Example Response**:
+
+    .. sourcecode:: http
+    HTTP/1.1 200 OK
+
+    {"username": "myusername"}
+
+    """
+    user_dict = {'username': pwd.getpwuid(os.getuid()).pw_name}
+    return jsonify(user_dict)
