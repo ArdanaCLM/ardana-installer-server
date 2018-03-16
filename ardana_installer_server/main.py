@@ -45,6 +45,18 @@ app.register_blueprint(oneview.bp)
 app.register_blueprint(suse_manager.bp)
 app.register_blueprint(socket_proxy.bp)
 app.json_encoder = CustomJSONEncoder
+# Flask logging is broken, and it is a time bomb: by default it does nothing,
+# but the first time an exception happens, it creates a new logger that
+# interferes with normal python logging, which messes up all subsequent log
+# messages.  This bug was reported in
+# https://github.com/pallets/flask/issues/641 and is expected to be fixed in
+# the future when Flask 1.0 ships.  Referring to app.logger forces this
+# creation via Flask's logger property handler.  We then clean up the mess it
+# makes
+app.logger                   # initialize flask logging (screwing up logging)
+app.logger.handlers = []     # clear out the newly creating logger
+app.logger.propagate = True  # let messages be handled by normal logging
+
 CORS(app)
 
 
@@ -56,11 +68,13 @@ def root():
 def main():
 
     socketio.init_app(app)
+    # The 'log' parameter avoids running in debug mode, which suppresses the
+    # debug message that is emitted on *every* incoming request.
     socketio.run(app,
                  host=CONF.general.host,
                  port=CONF.general.port,
+                 log=LOG,
                  use_reloader=True)
 
 if __name__ == "__main__":
     main()
-
