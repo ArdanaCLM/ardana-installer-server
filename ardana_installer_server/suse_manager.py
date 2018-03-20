@@ -11,13 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from flask import abort
 from flask import Blueprint
 from flask import jsonify
 from flask import request
 import socket
 import ssl
-import xmlrpclib
+import sys
+
+if sys.version_info.major < 3:
+    from xmlrpclib import ServerProxy
+else:
+    from xmlrpc.client import ServerProxy
+
 
 bp = Blueprint('suse-manager', __name__)
 
@@ -33,7 +38,7 @@ def get_client(url, verify_ssl):
     if verify_ssl == 'false':
         context = ssl._create_unverified_context()
 
-    client = xmlrpclib.Server(url, verbose=0, context=context)
+    client = ServerProxy(url, verbose=0, context=context)
     return client
 
 
@@ -62,7 +67,7 @@ def connection_test():
         suma_url = "https://" + creds['host'] + ":" + str(port) + "/rpc/api"
         suma_username = creds['username']
         suma_password = creds['password']
-        client = xmlrpclib.Server(suma_url, verbose=0, context=context)
+        client = ServerProxy(suma_url, verbose=0, context=context)
         key = client.auth.login(suma_username, suma_password)
         return jsonify(key)
     except Exception as e:
@@ -99,7 +104,8 @@ def sm_server_details(id):
 
         detail = detail_list[0]
         detail.update(client.system.getDetails(key, int(id)))
-        detail.update({"running_kernel": client.system.getRunningKernel(key, int(id))})
+        detail.update({"running_kernel": client.system.getRunningKernel(
+            key, int(id))})
 
         return jsonify(detail)
     except Exception as e:

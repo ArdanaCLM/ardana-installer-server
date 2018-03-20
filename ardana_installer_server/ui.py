@@ -16,13 +16,13 @@ from flask import Blueprint
 from flask import jsonify
 from flask import request
 import json
+import os
 from oslo_config import cfg
+import pwd
 import re
 import subprocess
 from tinydb import Query
 from tinydb import TinyDB
-import pwd
-import os
 
 bp = Blueprint('ui', __name__)
 SUCCESS = {"success": True}
@@ -117,13 +117,11 @@ def get_servers():
     """
     db = TinyDB(CONF.general.db_file)
     server_table = db.table('servers')
-    q = Query()
     try:
         src = request.args.get('source', None)
         if not src:
             return jsonify(server_table.all())
-        query_str = create_query_str(src)
-        exec("results = server_table.search(%s)" % query_str)
+        results = server_table.search(create_query(src))
         return jsonify(results)
     except Exception:
         abort(400)
@@ -182,32 +180,35 @@ def delete_server():
     """
     db = TinyDB(CONF.general.db_file)
     server_table = db.table('servers')
-    q = Query()
     try:
         src = request.args.get('source', None)
         uid = request.args.get('uid', None)
         if not src:
             return jsonify(error="source must be specified"), 400
-        query_str = create_query_str(src, uid)
-        exec("server_table.remove(%s)" % query_str)
+        server_table.search(create_query(src, uid))
         return jsonify(SUCCESS)
     except Exception:
         abort(400)
 
-def create_query_str(src,uid=None):
-    queries = []
+
+def create_query(src, uid=None):
+    q = Query()
 
     if uid:
-        queries.append("(q.uid == \"%s\")" % uid)
+        return (q.uid == uid)
+
     if src:
-        clauses = []
         if not set(src.split(',')).issubset(['sm', 'ov', 'manual']):
             return jsonify(error="specified sources are invalid"), 400
-        for source in src.split(','):
-            clauses.append('(q.source == "%s")' % source)
-        queries.append("(%s)" % '|'.join(clauses))
 
-    return '&'.join(queries)
+        query = None
+        for source in src.split(','):
+            if query is None:
+                query = (q.source == source)
+            else:
+                query |= (q.source == source)
+
+        return query
 
 
 @bp.route("/api/v1/ips", methods=['GET'])
@@ -235,7 +236,8 @@ def get_ips():
     pattern = re.compile(r'inet +([0-9.]+)')
 
     try:
-        lines = subprocess.check_output(["ip", "-o", "-4", "addr", "show"])
+        lines = subprocess.check_output(["ip", "-o", "-4", "addr", "show"],
+                                        universal_newlines=True)
         for line in lines.split('\n'):
             match = pattern.search(line)
             if match:
@@ -249,8 +251,10 @@ def get_ips():
 
 @bp.route("/api/v1/external_urls", methods=['GET'])
 def get_external_urls():
-    """Returns list of external URLs the customer can access via the browser
-       once cloud deployment is complete
+    """Returns list of external URLs
+
+    Returns the list of external URLs that the customer can access via the
+    browser once cloud deployment is complete
 
     **Example Request**:
 
@@ -270,9 +274,7 @@ def get_external_urls():
     """
     cfg.CONF.reload_config_files()
 
-    urls = {k: v for (k, v) in cfg.CONF.urls.items()}
-
-    return jsonify(urls)
+    return jsonify(dict(cfg.CONF.urls.items()))
 
 
 @bp.route("/api/v1/user", methods=['GET'])
