@@ -11,19 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 from flask import abort
 from flask.json import JSONEncoder
-import datetime
 import requests
 import socket
-import xmlrpclib
+import sys
+
+if sys.version_info.major < 3:
+    from xmlrpclib import DateTime
+else:
+    from xmlrpc.client import DateTime
 
 TIMEOUT = 2
+
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
         try:
-            if isinstance(obj, xmlrpclib.DateTime):
+            if isinstance(obj, DateTime):
                 return datetime.datetime.strptime(
                     obj.value, "%Y%m%dT%H:%M:%S").isoformat()
             iterable = iter(obj)
@@ -32,6 +38,7 @@ class CustomJSONEncoder(JSONEncoder):
         else:
             return list(iterable)
         return JSONEncoder.default(self, obj)
+
 
 # Forward the url to the given destination
 def forward(url, request):
