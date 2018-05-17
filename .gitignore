@@ -11,3 +11,6 @@ local.cfg
 AUTHORS
 ChangeLog
 etc/service.conf.sample
+uiservertrigger.txt
+.idea
+*.iml
