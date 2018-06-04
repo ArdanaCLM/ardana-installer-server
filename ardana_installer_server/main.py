@@ -14,9 +14,12 @@
 
 from flask import Flask
 from flask_cors import CORS
+import os
 from oslo_config import cfg
 from oslo_log import log as logging
+import time
 
+from ardana_installer_server import admin
 from ardana_installer_server import ardana
 from ardana_installer_server import config  # noqa: F401
 from ardana_installer_server import oneview
@@ -39,6 +42,7 @@ logging.setup(CONF, 'ardana_installer_service')
 app = Flask(__name__,
             static_url_path='',
             static_folder=CONF.general.ui_home)
+app.register_blueprint(admin.bp)
 app.register_blueprint(ardana.bp)
 app.register_blueprint(ui.bp)
 app.register_blueprint(oneview.bp)
@@ -68,13 +72,18 @@ def root():
 def main():
 
     socketio.init_app(app)
+
+    with open(CONF.general.restart_trigger_file , 'w') as f:
+        f.write("Started at %s\n" % time.asctime())
+
     # The 'log' parameter avoids running in debug mode, which suppresses the
     # debug message that is emitted on *every* incoming request.
     socketio.run(app,
                  host=CONF.general.host,
                  port=CONF.general.port,
                  log=LOG,
-                 use_reloader=True)
+                 use_reloader=True,
+                 extra_files=[CONF.general.restart_trigger_file])
 
 if __name__ == "__main__":
     main()
