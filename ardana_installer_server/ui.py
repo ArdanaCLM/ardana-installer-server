@@ -185,7 +185,7 @@ def delete_server():
         uid = request.args.get('uid', None)
         if not src:
             return jsonify(error="source must be specified"), 400
-        server_table.search(create_query(src, uid))
+        server_table.remove(create_query(src, uid))
         return jsonify(SUCCESS)
     except Exception:
         abort(400)
@@ -196,7 +196,6 @@ def create_query(src, uid=None):
 
     if uid:
         return (q.uid == uid)
-
     if src:
         if not set(src.split(',')).issubset(['sm', 'ov', 'manual']):
             return jsonify(error="specified sources are invalid"), 400
