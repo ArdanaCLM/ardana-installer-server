@@ -33,8 +33,6 @@ LOG = logging.getLogger(__name__)
 
 bp = Blueprint('socket_proxy', __name__)
 
-ARDANA_SVC_HOST = urlparse(CONF.general.ardana_service_url).hostname
-ARDANA_SVC_PORT = urlparse(CONF.general.ardana_service_url).port
 
 LOG_NAMESPACE = '/log'
 EVENT_NAMESPACE = '/event'
@@ -78,7 +76,16 @@ def on_join(id):
 
     @copy_current_request_context
     def wait_for_messages(id):
-        proxy = SocketProxy(id, ARDANA_SVC_HOST, ARDANA_SVC_PORT)
+
+        # Per the socketIO-client documentation, the hostname parameter
+        # must be prefixed with https:// in order to use SSL.
+        url = urlparse(CONF.general.ardana_service_url)
+        if url.scheme == 'https':
+            host = 'https://' + url.hostname
+        else:
+            host = url.hostname
+
+        proxy = SocketProxy(id, host, url.port)
         proxy.wait()
 
     eventlet.spawn(wait_for_messages, id)
