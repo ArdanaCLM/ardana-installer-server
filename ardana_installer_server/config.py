@@ -18,7 +18,7 @@ general_opts = [
               default='0.0.0.0',
               help='IP address to listen on.'),
     cfg.PortOpt('port',
-                default=3000,
+                default=2209,
                 help='Port number to listen on.'),
     cfg.StrOpt('db_file',
                default='/tmp/db.json',
