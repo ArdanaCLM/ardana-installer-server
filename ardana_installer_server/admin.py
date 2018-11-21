@@ -15,17 +15,18 @@
 from flask import Blueprint
 from flask import jsonify
 from flask import request
-import os
 from oslo_config import cfg
 import threading
 import time
+from util import ping
 
 bp = Blueprint('admin', __name__)
 CONF = cfg.CONF
 SUCCESS = {"success": True}
 
+
 def update_trigger_file():
-    with open(CONF.general.restart_trigger_file , 'w') as f:
+    with open(CONF.general.restart_trigger_file, 'w') as f:
         f.write("Triggered restart at %s\n" % time.asctime())
 
 
@@ -54,3 +55,14 @@ def restart():
     t.start()
 
     return jsonify(SUCCESS)
+
+
+@bp.route("/api/v1/connection_test", methods=['POST'])
+def connection_test():
+    body = request.get_json() or {}
+    host = body['host']
+    try:
+        ping(host, 22)
+        return jsonify('Success')
+    except Exception as e:
+        return jsonify(error=str(e)), 404
