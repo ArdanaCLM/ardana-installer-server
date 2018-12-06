@@ -5,6 +5,10 @@
 Ardana Installer Server
 ==============================
 
+NOTE!! As of December 6th 2018, this repo is deprecated. All functionality
+that was present here has been merged into `https://github.com/ArdanaCLM/ardana-service`,
+flattening out the backend for the ardana-installer. 
+
 REST server for Ardana cloud installer
 
 ---------------
